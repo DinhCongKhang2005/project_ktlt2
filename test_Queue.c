@@ -20,7 +20,8 @@ void test_makeNode() {
     printf("Test: Tao node hang doi\n");
     printf("Dau vao: ID = \"U001\", Title = \"BookA\", Author = \"AuthorA\", Ngay = 1/5/125, Order = 1\n");
     struct tm date = make_date(1, 5, 125);
-    Queue *node = makeNode("U001", "BookA", "AuthorA", date, 1);
+    Queue *node = makeNode("U001", "BookA", "AuthorA", 1);
+    node->DecideBorrow = date;
     assert(strcmp(node->IdentifyID, "U001") == 0);
     assert(strcmp(node->Title, "BookA") == 0);
     assert(strcmp(node->Author, "AuthorA") == 0);
@@ -42,11 +43,11 @@ void test_insertNode_getfront() {
 
     printf("Them node uu tien: ID = \"U002\", Order = 1\n");
     struct tm date1 = make_date(2, 5, 125);
-    insertNode("U002", "BookA", "AuthorA", 1, date1);
+    void insertNode(char *IdentifyID, char *Title, char *Author, bool Order);
 
     printf("Them node thuong: ID = \"U003\", Order = 0\n");
     struct tm date2 = make_date(3, 5, 125);
-    insertNode("U003", "BookA", "AuthorA", 0, date2);
+    insertNode("U003", "BookA", "AuthorA", 2);
 
     Book *b = searchBook("BookA", "AuthorA");
     Queue *front = getfront(b);
@@ -77,7 +78,7 @@ void test_searching() {
     Book *b = searchBook("BookA", "AuthorA");
     printf("Them nguoi moi: ID = \"U004\", Order = 1\n");
     struct tm date = make_date(4, 5, 125);
-    insertNode("U004", "BookA", "AuthorA", 1, date);
+    insertNode("U004", "BookA", "AuthorA", 1);
     Queue *found = searching(b, "U004");
     printf("Ket qua tim kiem: %s\n", found ? found->IdentifyID : "NULL");
     assert(found && strcmp(found->IdentifyID, "U004") == 0);

@@ -130,7 +130,7 @@ void test_deleteBorrowingTicket() {
 // Test doc va ghi file borrowing.csv
 void test_Read_Write_BorrowingFile() {
     printf("Test: Ghi file borrowing.csv va doc lai\n");
-    storeBorrowing();
+    storeBorrowing("Borrowing.csv");
     printf("Doc file borrowing.csv\n");
     ReadBorrowing("borrowing.csv");
     // Co the kiem tra lai bang bam bang searchBorrowingTicket voi mot ma cu the
