@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build active file",
+      "type": "shell",
+      "command": "gcc",
+      "args": [
+        "main.c",
+        "Library_UI.c",
+        "User_UI.c",
+        "Admin_UI.c",
+        "AVL_Tree.c",
+        "Member.c",
+        "Book.c",
+        "Borrowing.c",
+        "Queue.c",
+        "hash.c",
+        "-o",
+        "main.exe"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"]
+    }
+  ]
+}
