@@ -1,120 +1,101 @@
 #include "Member.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include "AVL_Tree.h"
-#include "Data.h"
-#include "hash.h"
 
-// Tạo 
-//Thêm thành viên
-void InputMember(Member *newMember) {
-    char *key = newMember->IdentifyID; // Lấy IdentifyID làm khóa
-    HashTableMember[hash(key)] = insertAVL(HashTableMember[hash(key)], newMember, key, compareString); // Thêm vào bảng băm
-}
-// Đọc từ file csv
-void ReadMember(const char *filename) {
-    FILE *file = fopen(filename, "r");
-    if (file == NULL) {
-        printf("Khong the mo file! %s\n", filename);
+#define MAX_MEMBERS 1000
+
+static BanDoc danhSachBanDoc[MAX_MEMBERS];
+static int soLuongBanDoc = 0;
+
+void ThemBanDoc(BanDoc *banDoc) {
+    if (soLuongBanDoc >= MAX_MEMBERS) {
+        printf("Khong the them ban doc moi, da day bo nho!\n");
         return;
     }
-    char line[256];
-    while (fgets(line, sizeof(line), file)){
-        // Nếu dòng chỉ chứa ký tự newline (dòng trống)
-        if (strcmp(line, "\n") == 0)
-            continue;
-        line[strcspn(line, "\n")] = '\0';
-        Member *newMember = (Member*)malloc(sizeof(Member));
-        sscanf(line, "%[^,],%[^,],%d", newMember->IdentifyID, newMember->Name, &newMember->CurrentQuantity);
-        InputMember(newMember); // Thêm thành viên vào bảng băm
-    }
-    fclose(file);
-
+    danhSachBanDoc[soLuongBanDoc++] = *banDoc;
+    printf("Them ban doc thanh cong!\n");
 }
 
-//Tìm kiếm thành viên
-Member* SearchMember(char *IdentifyID) {
-    unsigned int index = hash(IdentifyID); // Tính toán chỉ số băm
-    AVLNode *result = searchAVL(HashTableMember[index], IdentifyID, compareString); // Tìm kiếm trong bảng băm
-    if (result != NULL) {
-        Member *member = (Member *)result->data; // Lấy dữ liệu thành viên
-        return member;
-    } else {
-        return NULL; // Không tìm thấy thành viên 
-    }
-}
-
-//Xóa thành viên
-void DeleteMember() {
-    char IdentifyID[12];
-    printf("Nhap Can cuoc cong dan: ");
-    scanf("%s", IdentifyID);
-    unsigned int index = hash(IdentifyID); // Tính toán chỉ số băm
-    AVLNode *result = searchAVL(HashTableMember[index], IdentifyID, compareString); // Tìm kiếm trong bảng băm
-    if (result != NULL) {
-        Member *member = (Member *)result->data; // Lấy dữ liệu thành viên
-        if (member->CurrentQuantity > 0) {
-            printf("Khong the xoa thanh vien, vi con sach muon\n");
+void XoaBanDoc(const char *MaSinhVien) {
+    for (int i = 0; i < soLuongBanDoc; ++i) {
+        if (strcmp(danhSachBanDoc[i].MaSinhVien, MaSinhVien) == 0) {
+            for (int j = i; j < soLuongBanDoc - 1; ++j) {
+                danhSachBanDoc[j] = danhSachBanDoc[j + 1];
+            }
+            --soLuongBanDoc;
+            printf("Da xoa ban doc thanh cong!\n");
+            return;
         }
-        else HashTableMember[index] = deleteAVL(HashTableMember[index], member->IdentifyID, compareString); // Xóa thành viên khỏi bảng băm
-        printf("Da xoa thanh vien\n");
-    } else {
-        printf("Khong tim thay thanh vien\n");
     }
+    printf("Khong tim thay ban doc de xoa!\n");
 }
 
-//------Ghi ra file CSV------
-
-// Hàm duyệt cây AVL 
-
-typedef struct queue{
-    AVLNode* node;
-    struct queue *next;
-} queue;
-queue* createNodequeueMember(AVLNode *node){
-    queue* newNode = (queue*)malloc(sizeof(queue));
-    newNode->node = node;
-    newNode->next = NULL;
-    return newNode;
-}
-// Ghi dữ liệu theo chiều rộng 
-void inorderWriteMember(FILE *file, AVLNode *node) {
-    if (node == NULL) return;
-
-    queue* head = createNodequeueMember(node);
-    queue* tail = head;
-
-    while (head != NULL) {
-        if (head->node->left != NULL) {
-            tail->next = createNodequeueMember(head->node->left);
-            tail = tail->next;
+void CapNhatBanDoc(const char *MaSinhVien, BanDoc banDocMoi) {
+    for (int i = 0; i < soLuongBanDoc; ++i) {
+        if (strcmp(danhSachBanDoc[i].MaSinhVien, MaSinhVien) == 0) {
+            danhSachBanDoc[i] = banDocMoi;
+            printf("Cap nhat thong tin ban doc thanh cong!\n");
+            return;
         }
-        if (head->node->right != NULL) {
-            tail->next = createNodequeueMember(head->node->right);
-            tail = tail->next;
-        }
-
-        Member* member = head->node->data;
-        fprintf(file, "%s,%s,%d\n", member->IdentifyID, member->Name, member->CurrentQuantity);
-
-        queue* tmp = head;
-        head = head->next;
-        free(tmp);
     }
+    printf("Khong tim thay ban doc de cap nhat!\n");
 }
 
+BanDoc* TimKiemBanDoc(const char *MaSinhVien) {
+    for (int i = 0; i < soLuongBanDoc; ++i) {
+        if (strcmp(danhSachBanDoc[i].MaSinhVien, MaSinhVien) == 0) {
+            return &danhSachBanDoc[i];
+        }
+    }
+    return NULL;
+}
 
-void StoreMember(const char *filename) {
-    FILE *file = fopen(filename, "w");
-    if (file == NULL) {
-        printf("Khong the mo file!\n");
+void HienThiThongTinBanDoc(const BanDoc *banDoc) {
+    if (!banDoc) return;
+    printf("Ma sinh vien: %s\n", banDoc->MaSinhVien);
+    printf("Ten ban doc: %s\n", banDoc->TenBanDoc);
+    printf("So sach dang muon: %d\n", banDoc->SoSachDangMuon);
+}
+
+void HienThiDanhSachBanDoc() {
+    printf("=== DANH SACH BAN DOC ===\n");
+    for (int i = 0; i < soLuongBanDoc; ++i) {
+        printf("----- Ban doc %d -----\n", i + 1);
+        HienThiThongTinBanDoc(&danhSachBanDoc[i]);
+    }
+    if (soLuongBanDoc == 0)
+        printf("Khong co ban doc nao trong thu vien!\n");
+}
+
+void DocDuLieuBanDoc(const char *TenFile) {
+    FILE *f = fopen(TenFile, "r");
+    if (!f) {
+        printf("Khong the mo file ban doc: %s\n", TenFile);
         return;
     }
-
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        AVLNode *node = HashTableMember[i];
-        inorderWriteMember(file, node);
+    soLuongBanDoc = 0;
+    while (!feof(f)) {
+        BanDoc bd;
+        if (fscanf(f, "%12[^,],%50[^,],%d\n",
+            bd.MaSinhVien, bd.TenBanDoc, &bd.SoSachDangMuon) == 3) {
+            danhSachBanDoc[soLuongBanDoc++] = bd;
+        }
     }
-    
-    fclose(file);
+    fclose(f);
 }
 
+void GhiDuLieuBanDoc(const char *TenFile) {
+    FILE *f = fopen(TenFile, "w");
+    if (!f) {
+        printf("Khong the mo file de ghi ban doc: %s\n", TenFile);
+        return;
+    }
+    for (int i = 0; i < soLuongBanDoc; ++i) {
+        fprintf(f, "%s,%s,%d\n",
+                danhSachBanDoc[i].MaSinhVien,
+                danhSachBanDoc[i].TenBanDoc,
+                danhSachBanDoc[i].SoSachDangMuon);
+    }
+    fclose(f);
+}
