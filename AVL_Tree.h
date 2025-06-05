@@ -1,16 +1,17 @@
-#ifndef AVL_TREE
-#define AVL_TREE
-#include "Data.h"
-#include <stdlib.h>
+#ifndef AVL_TREE_H
+#define AVL_TREE_H
 
-typedef int (*CompareFunction)(void*, void*); 
-// cmp: hàm so sánh giữa 2 đối tượng, trả về 1 nếu lớn hơn, -1 nếu nhỏ hơn và 0 nếu bằng nhau
-// void *data: dữ liệu cần thêm vào cây AVL - tự định nghĩa kiểu dữ liệu
-AVLNode* createNode(void *data,void *key); // Tạo nút mới trong cây AVL
-AVLNode* Balance(AVLNode* node); // Cân bằng lại cây AVL
-AVLNode* insertAVL(AVLNode* root, void *data, void *key, CompareFunction cmp);
-AVLNode* searchAVL(AVLNode* root, void *key, CompareFunction cmp);
-AVLNode* minValueNode(AVLNode* node); // Tìm nút có giá trị nhỏ nhất trong cây con bên trái
-AVLNode* deleteAVL(AVLNode* root, void *key, CompareFunction cmp); // Xóa nút trong cây AVL
+typedef struct AVLNode {
+    void *DuLieu;
+    void *Khoa;
+    int Cao;
+    struct AVLNode *Trai, *Phai;
+} AVLNode;
+
+AVLNode* ChenAVL(AVLNode *goc, void *DuLieu, void *Khoa, int (*SoSanh)(const void *, const void *));
+AVLNode* TimKiemAVL(AVLNode *goc, const void *Khoa, int (*SoSanh)(const void *, const void *));
+AVLNode* XoaAVL(AVLNode *goc, const void *Khoa, int (*SoSanh)(const void *, const void *));
+void DuyetLNR(AVLNode *goc, void (*XuLy)(void *));
+void GiaiPhongAVL(AVLNode *goc);
 
 #endif

@@ -1,17 +1,15 @@
 #ifndef MEMBER_H
 #define MEMBER_H
+
 #include "Data.h"
 
-//Thêm thành viên
-void InputMember(Member *newMember);
-// Đọc từ file csv
-void ReadMember(const char *filename);
-//Tìm kiếm thành viên
-Member* SearchMember(char *IdentifyID);    
-//Xóa thành viên
-void DeleteMember();
-// Ghi vaof file CSV 
-void StoreMember(const char *filename );
-// Hàm duyệt cây AVL 
-void inorderWriteMember(FILE *file, AVLNode *node);
+void ThemBanDoc(BanDoc *banDoc);
+void XoaBanDoc(const char *MaSinhVien);
+void CapNhatBanDoc(const char *MaSinhVien, BanDoc banDocMoi);
+BanDoc* TimKiemBanDoc(const char *MaSinhVien);
+void HienThiThongTinBanDoc(const BanDoc *banDoc);
+void HienThiDanhSachBanDoc();
+void DocDuLieuBanDoc(const char *TenFile);
+void GhiDuLieuBanDoc(const char *TenFile);
+
 #endif

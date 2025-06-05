@@ -1,183 +1,121 @@
 #include "Book.h"
-#include "AVL_Tree.h"
-#include "hash.h"
-#include <string.h>
-#include <ctype.h>
+#include "Utility.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-// Hàm chuyển về các ký tự thường
-void tolowerCase(char *str) {
-    for (; *str; ++str) *str = tolower(*str);
-}
+#define MAX_BOOKS 1000
 
-// Hàm trim chuẩn hóa chuỗi (xóa khoảng trắng đầu/cuối)
-void trim(char *str) {
-    char *start = str;
-    while (isspace((unsigned char)*start)) start++;
-    if (start != str) memmove(str, start, strlen(start) + 1);
+static Sach danhSachSach[MAX_BOOKS];
+static int soLuongSach = 0;
 
-    char *end = str + strlen(str) - 1;
-    while (end >= str && isspace((unsigned char)*end)) end--;
-    *(end + 1) = '\0';
-}
-
-// Tạo key tạm thời từ title và author: title_author (chuẩn hóa trước khi nối)
-void generateKey(char *key, const char *title, const char *author) {
-    char t[100], a[100];
-    strncpy(t, title, sizeof(t) - 1); t[sizeof(t) - 1] = '\0';
-    strncpy(a, author, sizeof(a) - 1); a[sizeof(a) - 1] = '\0';
-    trim(t); trim(a);
-    tolowerCase(t); tolowerCase(a);
-    snprintf(key, 201, "%s_%s", t, a);
-}
-
-// Thêm sách vào hệ thống
-void insertBook(Book book) {
-    trim(book.Title);
-    trim(book.Author);
-    tolowerCase(book.Title);
-    tolowerCase(book.Author);
-
-    char key[201];
-    generateKey(key, book.Title, book.Author);
-    int index = hash(key);
-
-    // printf("DEBUG: Thêm sách với key = '%s', index = %d\n", key, index);
-
-    // Tìm xem đã có sách này chưa
-    AVLNode *found = searchAVL(HashTableBook[index], key, compareString);
-    if (!found) {
-        Book *newBook = (Book *)malloc(sizeof(Book));
-        if (newBook) {
-            *newBook = book;
-            char *keyCopy = strdup(key); // Đảm bảo key tồn tại suốt đời node
-            HashTableBook[index] = insertAVL(HashTableBook[index], newBook, keyCopy, compareString);
-        }
-    } else {
-        Book *exist = (Book *)found->data;
-        exist->Quantity += book.Quantity;
+void ThemSach(Sach sach) {
+    if (soLuongSach >= MAX_BOOKS) {
+        printf("Khong the them sach moi, da day bo nho!\n");
+        return;
     }
+    danhSachSach[soLuongSach++] = sach;
+    printf("Them sach thanh cong!\n");
 }
 
-// Tìm kiếm sách
-Book* searchBook(const char *title, const char *author) {
-    char key[201];
-    generateKey(key, title, author);
-    int index = hash(key);
+void XoaSach(const char *TenSach, const char *TacGia) {
+    for (int i = 0; i < soLuongSach; ++i) {
+        if (strcmp(danhSachSach[i].TenSach, TenSach) == 0 &&
+            strcmp(danhSachSach[i].TacGia, TacGia) == 0) {
+            for (int j = i; j < soLuongSach - 1; ++j) {
+                danhSachSach[j] = danhSachSach[j + 1];
+            }
+            --soLuongSach;
+            printf("Da xoa sach thanh cong!\n");
+            return;
+        }
+    }
+    printf("Khong tim thay sach de xoa!\n");
+}
 
-    //printf("DEBUG: Tìm sách với key = '%s', index = %d\n", key, index);
+void CapNhatSach(const char *TenSach, const char *TacGia, Sach sachMoi) {
+    for (int i = 0; i < soLuongSach; ++i) {
+        if (strcmp(danhSachSach[i].TenSach, TenSach) == 0 &&
+            strcmp(danhSachSach[i].TacGia, TacGia) == 0) {
+            danhSachSach[i] = sachMoi;
+            printf("Cap nhat thong tin sach thanh cong!\n");
+            return;
+        }
+    }
+    printf("Khong tim thay sach de cap nhat!\n");
+}
 
-    AVLNode *found = searchAVL(HashTableBook[index], key, compareString);
-    if (found) return (Book *)found->data;
+Sach* TimKiemSach(const char *TenSach, const char *TacGia) {
+    for (int i = 0; i < soLuongSach; ++i) {
+        if (strcmp(danhSachSach[i].TenSach, TenSach) == 0 &&
+            strcmp(danhSachSach[i].TacGia, TacGia) == 0) {
+            return &danhSachSach[i];
+        }
+    }
     return NULL;
 }
 
-// Hàm xóa sách
-void deleteBook(const char *title, const char *author) {
-    char key[201];
-    generateKey(key, title, author);
-    int index = hash(key);
-    HashTableBook[index] = deleteAVL(HashTableBook[index], key, compareString);
-}
-
-// Hàm duyệt AVL để hiển thị sách
-void printBook(Book *book) {
-    printf("%-30s | %-20s | %d\n", book->Title, book->Author, book->Quantity);
-}
-
-void traverseAVL(AVLNode *root, void (*visit)(Book *)) {
-    if (!root) return;
-    traverseAVL(root->left, visit);
-    visit((Book *)root->data);
-    traverseAVL(root->right, visit);
-}
-
-// Hàm hiển thị tất cả sách
-void displayAllBooks() {
-    printf("%-30s | %-20s | %s\n", "Tieu de", "Tac gia", "So luong");
-    printf("--------------------------------------------------------------\n");
-    for (int i = 0; i < TABLE_SIZE; ++i) {
-        traverseAVL(HashTableBook[i], printBook);
+Sach* TimKiemSachBangMa(const char *MaSach) {
+    for (int i = 0; i < soLuongSach; ++i) {
+        if (strcmp(danhSachSach[i].MaSach, MaSach) == 0) {
+            return &danhSachSach[i];
+        }
     }
+    return NULL;
 }
 
-void loadBooksFromFile(const char *fileName) {
-    FILE *f = fopen(fileName, "r");
+void HienThiThongTinSach(const Sach *sach) {
+    if (!sach) return;
+    printf("Ma sach: %s\n", sach->MaSach);
+    printf("Ten sach: %s\n", sach->TenSach);
+    printf("Tac gia: %s\n", sach->TacGia);
+    printf("The loai: %s\n", sach->TheLoai);
+    printf("Tong so luong: %d\n", sach->TongSoLuong);
+    printf("So luong con lai: %d\n", sach->SoLuongConLai);
+}
+
+void HienThiDanhSachSach() {
+    printf("=== DANH SACH SACH ===\n");
+    for (int i = 0; i < soLuongSach; ++i) {
+        printf("----- Sach %d -----\n", i + 1);
+        HienThiThongTinSach(&danhSachSach[i]);
+    }
+    if (soLuongSach == 0)
+        printf("Khong co sach nao trong thu vien!\n");
+}
+
+void DocDuLieuSach(const char *TenFile) {
+    FILE *f = fopen(TenFile, "r");
     if (!f) {
-        printf("Không thể mở file %s\n", fileName);
+        printf("Khong the mo file sach: %s\n", TenFile);
         return;
     }
-    char line[256];
-    while (fgets(line, sizeof(line), f)) {
-        // Nếu dòng chỉ chứa ký tự newline (dòng trống)
-        if (strcmp(line, "\n") == 0)
-            continue;
-        line[strcspn(line, "\n")] = '\0';
-        Book book;
-        char *token = strtok(line, ";");
-        if (!token) continue;
-        strncpy(book.Title, token, sizeof(book.Title) - 1); book.Title[sizeof(book.Title) - 1] = '\0';
-
-        token = strtok(NULL, ";");
-        if (!token) continue;
-        strncpy(book.Author, token, sizeof(book.Author) - 1); book.Author[sizeof(book.Author) - 1] = '\0';
-
-        token = strtok(NULL, ";");
-        if (!token) continue;
-        book.Quantity = atoi(token);
-        book.queue0 = NULL;
-        book.queue1 = NULL;
-        insertBook(book);
+    soLuongSach = 0;
+    while (!feof(f)) {
+        Sach sach;
+        if (fscanf(f, "%20[^,],%100[^,],%50[^,],%30[^,],%d,%d\n",
+            sach.MaSach, sach.TenSach, sach.TacGia,
+            sach.TheLoai, &sach.TongSoLuong, &sach.SoLuongConLai) == 6) {
+            danhSachSach[soLuongSach++] = sach;
+        }
     }
     fclose(f);
 }
 
-// Ghi dữ liệu vào file 
-typedef struct queue{
-    AVLNode* node;
-    struct queue *next;
-} queue;
-queue* createNodequeueBook(AVLNode *node){
-    queue* newNode = (queue*)malloc(sizeof(queue));
-    newNode->node = node;
-    newNode->next = NULL;
-    return newNode;
-}
-// Ghi dữ liệu theo chiều rộng 
-void saveBookToFileHelper(AVLNode *node,FILE *file) {
-    if (node == NULL) return;
-
-    queue* head = createNodequeueBook(node);
-    queue* tail = head;
-
-    while (head != NULL) {
-        if (head->node->left != NULL) {
-            tail->next = createNodequeueBook(head->node->left);
-            tail = tail->next;
-        }
-        if (head->node->right != NULL) {
-            tail->next = createNodequeueBook(head->node->right);
-            tail = tail->next;
-        }
-
-        Book* book = head->node->data;
-        fprintf(file, "%s;%s;%d\n", book->Title,book->Author,book->Quantity);
-
-        queue* tmp = head;
-        head = head->next;
-        free(tmp);
-    }
-}
-
-void saveToFile(const char *fileName) {
-    FILE *f = fopen(fileName, "w");
+void GhiDuLieuSach(const char *TenFile) {
+    FILE *f = fopen(TenFile, "w");
     if (!f) {
-        printf("Không thể mở file %s để ghi!\n", fileName);
+        printf("Khong the mo file de ghi sach: %s\n", TenFile);
         return;
     }
-    for (int i = 0; i < TABLE_SIZE; ++i) {
-        saveBookToFileHelper(HashTableBook[i], f);
+    for (int i = 0; i < soLuongSach; ++i) {
+        fprintf(f, "%s,%s,%s,%s,%d,%d\n",
+                danhSachSach[i].MaSach,
+                danhSachSach[i].TenSach,
+                danhSachSach[i].TacGia,
+                danhSachSach[i].TheLoai,
+                danhSachSach[i].TongSoLuong,
+                danhSachSach[i].SoLuongConLai);
     }
     fclose(f);
 }
