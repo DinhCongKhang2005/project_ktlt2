@@ -1,41 +1,51 @@
-#ifndef DATA_H
-#define DATA_H
-
+#ifndef DuLieu_H
+#define DuLieu_H
+#include <stdio.h>
 #include <time.h>
 #include <stdbool.h>
+#define KichThuocBang 10
 
+// Cấu trúc hàng đợi mượn sách
+typedef struct HangDoi {
+    char MaThanhVien[13], TieuDe[200], TacGia[200];
+    struct tm ThoiGianAnDinh; // Thời gian sách đã về và ấn định cho người này
+    bool UuTien; // Trạng thái ưu tiên
+    struct HangDoi *TiepTheo; // Con trỏ next để lưu trữ thông tin hàng đợi
+} HangDoi;
+
+// Cấu trúc sách
 typedef struct Sach {
-    char MaSach[21];
-    char TenSach[101];
-    char TacGia[51];
-    char TheLoai[31];
-    int TongSoLuong;
-    int SoLuongConLai;
-    struct DanhSachCho *DanhSachChoDau;
+    char TieuDe[200], TacGia[200];
+    int SoLuong;
+    HangDoi* HangDoiUuTien;
+    HangDoi* HangDoiBinhThuong;
 } Sach;
 
-typedef struct BanDoc {
-    char MaSinhVien[13];
-    char TenBanDoc[51];
-    int SoSachDangMuon;
-} BanDoc;
+// Cấu trúc thành viên
+typedef struct ThanhVien {
+    char MaThanhVien[13], HoTen[100];
+    int SoLuongDangMuon;
+} ThanhVien;
 
-typedef struct GiaoDich {
-    char MaPhieuMuon[21];
-    char MaSinhVien[13];
-    char MaSach[21];
-    struct tm NgayMuon;
-    struct tm NgayHenTra;
-    struct tm NgayTra;
-    bool DaTra;
-} GiaoDich;
+// Cấu trúc phiếu mượn
+typedef struct PhieuMuon {
+    char MaPhieu[7], MaThanhVien[13], TieuDe[200], TacGia[200];
+    struct tm ThoiGianMuon;
+} PhieuMuon;
 
-typedef struct DanhSachCho {
-    char MaSinhVien[13];
-    char MaSach[21];
-    time_t NgayDangKy;
-    bool UuTien;
-    struct DanhSachCho *TiepTheo;
-} DanhSachCho;
+/*----------------------------------------------------------------------------------------*/
+
+// Cấu trúc cây AVL tổng quát
+typedef struct AVLNode {
+    void *Khoa; // Khóa của nút tự định nghĩa kiểu dữ liệu
+    void *DuLieu; // Dữ liệu của nút tự định nghĩa kiểu dữ liệu
+    struct AVLNode *Trai, *Phai; // Con trái và con phải của nút
+    int ChieuCao; // Chiều cao của nút
+} AVLNode;
+
+// Khai báo biến toàn cục cho bảng băm, được định nghĩa ở main.c
+extern AVLNode *BangBamSach[KichThuocBang];        // Bảng băm cho sách
+extern AVLNode *BangBamThanhVien[KichThuocBang];   // Bảng băm cho thành viên
+extern AVLNode *BangBamPhieuMuon[KichThuocBang];   // Bảng băm cho thông tin mượn sách
 
 #endif

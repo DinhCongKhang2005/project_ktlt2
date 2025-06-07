@@ -1,7 +1,7 @@
-#ifndef HASH_H
-#define HASH_H
+#ifndef BamChuoi_H
+#define BamChuoi_H
 
-unsigned int Bamh(const char *str, int kichThuocBang);
-int SoSanhChuoi(const void *a, const void *b);
+unsigned int BamChuoi(char *chuoi); // Hàm băm cho khoá
+int SoSanhChuoi(void *a, void *b);  // Hàm so sánh chuỗi
 
 #endif

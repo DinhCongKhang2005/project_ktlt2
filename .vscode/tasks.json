@@ -6,24 +6,25 @@
       "type": "shell",
       "command": "gcc",
       "args": [
-        "main.c",
-        "Library_UI.c",
-        "User_UI.c",
-        "Admin_UI.c",
-        "AVL_Tree.c",
-        "Member.c",
-        "Book.c",
-        "Borrowing.c",
-        "Queue.c",
-        "hash.c",
-        "-o",
-        "main.exe"
+    "main.c",
+    "Library_UI.c",
+    "User_UI.c",
+    "Admin_UI.c",
+    "AVL_Tree.c",
+    "Member.c",
+    "Book.c",
+    "Borrowing.c",
+    "Queue.c",
+    "hash.c",
+    "-o",
+    "main.exe"
       ],
       "group": {
         "kind": "build",
         "isDefault": true
       },
-      "problemMatcher": ["$gcc"]
+      "problemMatcher": ["$gcc"],
     }
   ]
 }
+

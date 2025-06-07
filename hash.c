@@ -1,15 +1,21 @@
-// Định nghĩa các hàm băm và so sánh chuỗi
 #include "hash.h"
+#include "AVL_Tree.h"
+#include "Data.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-unsigned int Bamh(const char *str, int kichThuocBang) {
-    unsigned int hash = 5381;
-    int c;
-    while ((c = *str++))
-        hash = ((hash << 5) + hash) + c;
-    return hash % kichThuocBang;
+// Hàm băm cho khoá
+unsigned int BamChuoi(char *chuoi) {
+    unsigned long long bam = 0;
+    while (*chuoi) {
+        bam = (bam << 5) + *chuoi++;
+    }
+    return bam % KichThuocBang;
 }
 
-int SoSanhChuoi(const void *a, const void *b) {
-    return strcmp((const char *)a, (const char *)b);
+// Hàm so sánh xâu
+int SoSanhChuoi(void *a, void *b) {
+    return strcmp((char *)a, (char *)b);
 }
+

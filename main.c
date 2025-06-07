@@ -1,23 +1,32 @@
-#include "Menu.h"
-#include "Book.h"
-#include "Member.h"
-#include "Transaction.h"
-#include "WaitingList.h"
-#include "Utility.h"
 #include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include "Data.h"
+#include "AVL_Tree.h"
+#include "Library_Service.h"
+#include "Member.h"
+#include "Book.h"
+#include "Borrowing.h"
+#include "Queue.h"
+
 
 int main() {
-    DocDuLieuSach("sach.csv");
-    DocDuLieuBanDoc("bandoc.csv");
-    DocDuLieuGiaoDich("giaodich.csv");
-    DocDanhSachCho("danhsachcho.csv");
+    // Tải dữ liệu lên bảng băm
+    DocThanhVienTuFile("data/member.csv");
+    DocSachTuFile("data/book.csv");
+    DocPhieuMuonTuFile("data/borrowing.csv");
+    DocHangDoiTuFile("data/queue.csv");
+    printf("Tai du lieu thanh cong\n");
 
-    ChayMenuChinh();
+    // Chạy giao diện
+    GiaoDienThuVien();
 
-    GhiDuLieuSach("sach.csv");
-    GhiDuLieuBanDoc("bandoc.csv");
-    GhiDuLieuGiaoDich("giaodich.csv");
-    GhiDanhSachCho("danhsachcho.csv");
-
+    // Lưu dữ liệu từ bảng băm về file .csv
+    LuuTatCaHangDoiVaoFile("data/queue.csv");
+    LuuPhieuMuonVaoFile("data/borrowing.csv");
+    LuuSachVaoFile("data/book.csv");
+    LuuThanhVienVaoFile("data/member.csv");
+    printf("Luu du lieu thanh cong\n");
     return 0;
 }

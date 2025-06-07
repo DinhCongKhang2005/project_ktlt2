@@ -1,15 +1,18 @@
-#ifndef MEMBER_H
-#define MEMBER_H
-
+#ifndef ThanhVien_H
+#define ThanhVien_H
 #include "Data.h"
-
-void ThemBanDoc(BanDoc *banDoc);
-void XoaBanDoc(const char *MaSinhVien);
-void CapNhatBanDoc(const char *MaSinhVien, BanDoc banDocMoi);
-BanDoc* TimKiemBanDoc(const char *MaSinhVien);
-void HienThiThongTinBanDoc(const BanDoc *banDoc);
-void HienThiDanhSachBanDoc();
-void DocDuLieuBanDoc(const char *TenFile);
-void GhiDuLieuBanDoc(const char *TenFile);
+extern AVLNode *BangBamThanhVien[KichThuocBang];
+// Thêm thành viên
+void ThemThanhVien(ThanhVien *thanhVienMoi);
+// Đọc từ file csv
+void DocThanhVienTuFile(const char *tenFile);
+// Tìm kiếm thành viên
+ThanhVien* TimThanhVien(char *maThanhVien);
+// Xóa thành viên
+void XoaThanhVien();
+// Ghi vào file CSV 
+void LuuThanhVienVaoFile(const char *tenFile);
+// Hàm duyệt cây AVL 
+void DuyetGhiThanhVien(FILE *file, AVLNode *nut);
 
 #endif

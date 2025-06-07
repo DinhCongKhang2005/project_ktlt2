@@ -1,101 +1,116 @@
 #include "Member.h"
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include "AVL_Tree.h"
+#include "Data.h"
+#include "hash.h"
+AVLNode *BangBamThanhVien[KichThuocBang] = {NULL};
+// Thêm thành viên
+void ThemThanhVien(ThanhVien *thanhVienMoi) {
+    char *khoa = thanhVienMoi->MaThanhVien; // Lấy MaThanhVien làm khóa
+    unsigned int chiSo = BamChuoi(khoa);
+    BangBamThanhVien[chiSo] = ChenVaoCayAvl(BangBamThanhVien[chiSo], thanhVienMoi, khoa, SoSanhChuoi);
+}
 
-#define MAX_MEMBERS 1000
-
-static BanDoc danhSachBanDoc[MAX_MEMBERS];
-static int soLuongBanDoc = 0;
-
-void ThemBanDoc(BanDoc *banDoc) {
-    if (soLuongBanDoc >= MAX_MEMBERS) {
-        printf("Khong the them ban doc moi, da day bo nho!\n");
+// Đọc từ file csv
+void DocThanhVienTuFile(const char *tenFile) {
+    FILE *file = fopen(tenFile, "r");
+    if (file == NULL) {
+        printf("Khong the mo file! %s\n", tenFile);
         return;
     }
-    danhSachBanDoc[soLuongBanDoc++] = *banDoc;
-    printf("Them ban doc thanh cong!\n");
+    char dong[256];
+    while (fgets(dong, sizeof(dong), file)){
+        if (strcmp(dong, "\n") == 0)
+            continue;
+        dong[strcspn(dong, "\n")] = '\0';
+        ThanhVien *thanhVienMoi = (ThanhVien*)malloc(sizeof(ThanhVien));
+        sscanf(dong, "%[^,],%[^,],%d", thanhVienMoi->MaThanhVien, thanhVienMoi->HoTen, &thanhVienMoi->SoLuongDangMuon);
+        ThemThanhVien(thanhVienMoi);
+    }
+    fclose(file);
 }
 
-void XoaBanDoc(const char *MaSinhVien) {
-    for (int i = 0; i < soLuongBanDoc; ++i) {
-        if (strcmp(danhSachBanDoc[i].MaSinhVien, MaSinhVien) == 0) {
-            for (int j = i; j < soLuongBanDoc - 1; ++j) {
-                danhSachBanDoc[j] = danhSachBanDoc[j + 1];
-            }
-            --soLuongBanDoc;
-            printf("Da xoa ban doc thanh cong!\n");
-            return;
+// Tìm kiếm thành viên
+ThanhVien* TimThanhVien(char *maThanhVien) {
+    unsigned int chiSo = BamChuoi(maThanhVien);
+    AVLNode *ketQua = TimKiemCayAvl(BangBamThanhVien[chiSo], maThanhVien, SoSanhChuoi);
+    if (ketQua != NULL) {
+        ThanhVien *thanhVien = (ThanhVien *)ketQua->DuLieu;
+        return thanhVien;
+    } else {
+        return NULL;
+    }
+}
+
+// Xóa thành viên
+void XoaThanhVien() {
+    char maThanhVien[13];
+    printf("Nhap Can cuoc cong dan: ");
+    scanf("%s", maThanhVien);
+    unsigned int chiSo = BamChuoi(maThanhVien);
+    AVLNode *ketQua = TimKiemCayAvl(BangBamThanhVien[chiSo], maThanhVien, SoSanhChuoi);
+    if (ketQua != NULL) {
+        ThanhVien *thanhVien = (ThanhVien *)ketQua->DuLieu;
+        if (thanhVien->SoLuongDangMuon > 0) {
+            printf("Khong the xoa thanh vien, vi con sach muon\n");
         }
-    }
-    printf("Khong tim thay ban doc de xoa!\n");
-}
-
-void CapNhatBanDoc(const char *MaSinhVien, BanDoc banDocMoi) {
-    for (int i = 0; i < soLuongBanDoc; ++i) {
-        if (strcmp(danhSachBanDoc[i].MaSinhVien, MaSinhVien) == 0) {
-            danhSachBanDoc[i] = banDocMoi;
-            printf("Cap nhat thong tin ban doc thanh cong!\n");
-            return;
+        else {
+            BangBamThanhVien[chiSo] = XoaKhoiCayAvl(BangBamThanhVien[chiSo], thanhVien->MaThanhVien, SoSanhChuoi);
+            printf("Da xoa thanh vien\n");
         }
+    } else {
+        printf("Khong tim thay thanh vien\n");
     }
-    printf("Khong tim thay ban doc de cap nhat!\n");
 }
 
-BanDoc* TimKiemBanDoc(const char *MaSinhVien) {
-    for (int i = 0; i < soLuongBanDoc; ++i) {
-        if (strcmp(danhSachBanDoc[i].MaSinhVien, MaSinhVien) == 0) {
-            return &danhSachBanDoc[i];
+// Hàm duyệt cây AVL ghi ra file CSV
+typedef struct HangDoiThanhVien {
+    AVLNode* Nut;
+    struct HangDoiThanhVien *TiepTheo;
+} HangDoiThanhVien;
+
+HangDoiThanhVien* TaoNutHangDoiThanhVien(AVLNode *nut){
+    HangDoiThanhVien* nutMoi = (HangDoiThanhVien*)malloc(sizeof(HangDoiThanhVien));
+    nutMoi->Nut = nut;
+    nutMoi->TiepTheo = NULL;
+    return nutMoi;
+}
+
+void DuyetGhiThanhVien(FILE *file, AVLNode *nut) {
+    if (nut == NULL) return;
+
+    HangDoiThanhVien* dau = TaoNutHangDoiThanhVien(nut);
+    HangDoiThanhVien* duoi = dau;
+
+    while (dau != NULL) {
+        if (dau->Nut->Trai != NULL) {
+            duoi->TiepTheo = TaoNutHangDoiThanhVien(dau->Nut->Trai);
+            duoi = duoi->TiepTheo;
         }
+        if (dau->Nut->Phai != NULL) {
+            duoi->TiepTheo = TaoNutHangDoiThanhVien(dau->Nut->Phai);
+            duoi = duoi->TiepTheo;
+        }
+
+        ThanhVien* thanhVien = dau->Nut->DuLieu;
+        fprintf(file, "%s,%s,%d\n", thanhVien->MaThanhVien, thanhVien->HoTen, thanhVien->SoLuongDangMuon);
+
+        HangDoiThanhVien* tmp = dau;
+        dau = dau->TiepTheo;
+        free(tmp);
     }
-    return NULL;
 }
 
-void HienThiThongTinBanDoc(const BanDoc *banDoc) {
-    if (!banDoc) return;
-    printf("Ma sinh vien: %s\n", banDoc->MaSinhVien);
-    printf("Ten ban doc: %s\n", banDoc->TenBanDoc);
-    printf("So sach dang muon: %d\n", banDoc->SoSachDangMuon);
-}
-
-void HienThiDanhSachBanDoc() {
-    printf("=== DANH SACH BAN DOC ===\n");
-    for (int i = 0; i < soLuongBanDoc; ++i) {
-        printf("----- Ban doc %d -----\n", i + 1);
-        HienThiThongTinBanDoc(&danhSachBanDoc[i]);
-    }
-    if (soLuongBanDoc == 0)
-        printf("Khong co ban doc nao trong thu vien!\n");
-}
-
-void DocDuLieuBanDoc(const char *TenFile) {
-    FILE *f = fopen(TenFile, "r");
-    if (!f) {
-        printf("Khong the mo file ban doc: %s\n", TenFile);
+void LuuThanhVienVaoFile(const char *tenFile) {
+    FILE *file = fopen(tenFile, "w");
+    if (file == NULL) {
+        printf("Khong the mo file!\n");
         return;
     }
-    soLuongBanDoc = 0;
-    while (!feof(f)) {
-        BanDoc bd;
-        if (fscanf(f, "%12[^,],%50[^,],%d\n",
-            bd.MaSinhVien, bd.TenBanDoc, &bd.SoSachDangMuon) == 3) {
-            danhSachBanDoc[soLuongBanDoc++] = bd;
-        }
-    }
-    fclose(f);
-}
 
-void GhiDuLieuBanDoc(const char *TenFile) {
-    FILE *f = fopen(TenFile, "w");
-    if (!f) {
-        printf("Khong the mo file de ghi ban doc: %s\n", TenFile);
-        return;
+    for (int i = 0; i < KichThuocBang; i++) {
+        AVLNode *nut = BangBamThanhVien[i];
+        DuyetGhiThanhVien(file, nut);
     }
-    for (int i = 0; i < soLuongBanDoc; ++i) {
-        fprintf(f, "%s,%s,%d\n",
-                danhSachBanDoc[i].MaSinhVien,
-                danhSachBanDoc[i].TenBanDoc,
-                danhSachBanDoc[i].SoSachDangMuon);
-    }
-    fclose(f);
+    fclose(file);
 }
